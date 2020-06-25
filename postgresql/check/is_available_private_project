@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION public.is_available_private_project(
+	arg_project_id integer,
+	arg_account_index integer)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	check_query boolean :=false;
+	select_query integer;
+BEGIN
+	select_query := (SELECT id_account FROM public.ref_account_project
+					 	WHERE id_account=arg_account_index AND id_project=arg_project_id and user_state = 1);
+	IF select_query is NULL THEN
+		check_query := false;
+		return check_query;
+	ELSE
+		check_query := true;
+		return check_query;
+	END IF;
+END; $BODY$;

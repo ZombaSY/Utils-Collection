@@ -1,0 +1,119 @@
+CREATE OR REPLACE FUNCTION public.delete_account_from_digo(
+	arg_account_index integer,
+	arg_account_email text,
+	arg_account_name text)
+    RETURNS TABLE(tb_code integer, tb_container_name text)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	v_workspace_id INTEGER;
+	v_project_id INTEGER;
+	v_left_accounts INTEGER;
+	v_container_name TEXT;
+	v_container_names TEXT;
+	v_loop_counter INTEGER := 0;
+	v_account_index INTEGER;
+
+BEGIN
+	-- Check account --
+	v_account_index :=
+		(SELECT id FROM public.account
+			WHERE id = arg_account_index AND account_id = arg_account_email AND account_name = arg_account_name);
+
+	IF v_account_index IS NULL THEN
+		tb_code := -100;	-- No account found --
+		RETURN NEXT;
+
+	ELSE
+		-- Delete account from ref_account_project --
+		FOR v_project_id IN
+			DELETE FROM public.ref_account_project
+				WHERE id_account = v_account_index
+				RETURNING id_project
+
+		-- Delete project if left-account is 0 --
+		LOOP
+			v_left_accounts :=
+				(SELECT COUNT(*) FROM public.ref_account_project
+					WHERE id_project = v_project_id);
+
+			IF v_left_accounts = 0 THEN
+
+				-- Finally delete project --
+				DELETE FROM public.project
+					WHERE id = v_project_id
+					RETURNING belonged_workspace_id INTO v_workspace_id;
+
+				v_container_name :=
+					(SELECT cloud_container_name FROM public.azure_cloud_container
+						WHERE workspace_id = v_workspace_id);
+
+				-- Delete blob referencing deleted project --
+				DELETE FROM public.azure_cloud_blob
+					WHERE container_name = v_container_name AND cloud_path LIKE quote_ident(v_project_id || '%');
+
+				-- Update container left usage --
+
+
+			END IF;
+		END LOOP;
+
+		-- Delete account from ref_account_workspace --
+		FOR v_workspace_id IN
+			DELETE FROM public.ref_account_workspace
+				WHERE id_account = v_account_index
+				RETURNING id_workspace
+
+		-- Delete workspace if left-account is 0 --
+		LOOP
+			v_left_accounts :=
+				(SELECT COUNT(*) FROM public.ref_account_workspace
+					WHERE id_workspace = v_workspace_id);
+
+			IF v_left_accounts = 0 THEN
+
+				-- Store container_name to delete on server function --
+				-- Container_name can be null if account's workspace was not deleted --
+				SELECT cloud_container_name FROM public.azure_cloud_container
+					WHERE workspace_id = v_workspace_id
+					INTO v_container_name;
+
+				IF v_loop_counter = 0 THEN
+					v_container_names := v_container_name;
+				ELSE
+					v_container_names := v_container_names || ',' || v_container_name;
+				END IF;
+
+				-- Finally delete workspace --
+				DELETE FROM public.workspace
+					WHERE id = v_workspace_id;
+
+				-- Delete blob referencing deleted container --
+				DELETE FROM public.azure_cloud_blob
+					WHERE container_name = v_container_name;
+
+				v_loop_counter = v_loop_counter + 1;
+
+			END IF;
+		END LOOP;
+
+		-- Finally delete account --
+		DELETE FROM public.account
+			WHERE id = v_account_index;
+
+		DELETE FROM public.email
+			WHERE email_address = arg_account_email;
+
+		tb_container_name := v_container_names;
+		tb_code := 0;
+		RETURN NEXT;
+
+	END IF;
+END;
+$BODY$;
+

@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION public.select_azure_sas_token(
+	arg_workspace_name character,
+	arg_api_key character)
+    RETURNS character varying
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	var_container_name character varying;
+	var_sas_key character varying;
+BEGIN
+	var_container_name := (SELECT select_container_name FROM public.select_container_name(arg_api_key, arg_workspace_name));
+	IF var_container_name IS NOT NULL THEN
+		var_sas_key := (SELECT sas_key FROM public.azure_cloud_container
+							WHERE cloud_container_name = var_container_name);
+		RETURN var_sas_key;
+	ELSE
+		RETURN 'NULL';
+	END IF;
+END;
+$BODY$;

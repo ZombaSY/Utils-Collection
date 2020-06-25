@@ -1,0 +1,27 @@
+CREATE OR REPLACE FUNCTION public.update_azure_sas_token(
+	arg_sas_token character varying,
+	arg_container_name character)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	code INT;
+	temp_query character varying;
+BEGIN
+	temp_query := (SELECT cloud_container_name FROM public.azure_cloud_container
+				   	WHERE cloud_container_name = arg_container_name);
+	IF temp_query IS NOT NULL THEN
+		UPDATE public.azure_cloud_container SET sas_key = arg_sas_token
+			WHERE cloud_container_name = arg_container_name;
+		code := 0;
+		RETURN code;
+	ELSE
+		code := -100;
+		RETURN code;
+	END IF;
+END
+$BODY$;

@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION public.is_available_ref_account_project(
+	arg_id_account integer,
+	arg_id_project integer)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	select_query INTEGER;
+BEGIN
+	select_query := (SELECT id_account FROM public.ref_account_project
+		WHERE id_account = arg_id_account AND id_project = arg_id_project);
+
+	IF select_query IS NULL THEN
+		RAISE WARNING 'No Matching account between id_account and id_project';
+		RETURN FALSE;
+	ELSE
+		RETURN TRUE;
+	END IF;
+END; $BODY$;

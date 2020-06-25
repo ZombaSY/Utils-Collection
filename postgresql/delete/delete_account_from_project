@@ -1,0 +1,55 @@
+CREATE OR REPLACE FUNCTION public.delete_account_from_project(
+	arg_kicker_account_index integer,
+	arg_project_index integer,
+	arg_kicked_account_email text)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	v_user_permission INTEGER;
+	v_kicked_account_index INTEGER;
+	return_code INTEGER;
+BEGIN
+	-- Check kicker's permission --
+	v_user_permission := (SELECT user_permission FROM public.ref_account_project
+						  	WHERE id_account = arg_kicker_account_index AND id_project = arg_project_index);
+
+	BEGIN
+		v_kicked_account_index := (SELECT * FROM public.select_account_index(arg_kicked_account_email));
+		EXCEPTION
+			WHEN SQLSTATE 'P0001' THEN
+				RETURN -101;
+	END;
+
+	IF (v_user_permission = 1) THEN	-- Is Maintainer
+
+	-- Delete account from reference table --
+		BEGIN
+			DELETE FROM public.ref_account_project
+				WHERE id_account = v_kicked_account_index AND id_project = arg_project_index
+					RETURNING id_account INTO return_code;
+			EXCEPTION
+				WHEN SQLSTATE 'P0003' THEN
+					DELETE FROM public.ref_account_project
+						WHERE id_account = v_kicked_account_index AND id_project = arg_project_index;
+					return_code := -1; -- More than one same row in table --
+					return return_code;
+		END;
+
+		IF return_code IS NULL THEN
+			return_code := 1; -- No row Deleted --
+			RETURN return_code;
+		ELSE
+			return_code := 0;
+			RETURN return_code;
+		END IF;
+	ELSE
+		return_code := -100;	-- Kicker has no permission --\
+		RETURN return_code;
+	END IF;
+END;
+$BODY$;

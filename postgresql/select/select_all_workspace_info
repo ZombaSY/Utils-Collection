@@ -1,0 +1,67 @@
+CREATE OR REPLACE FUNCTION public.select_all_workspaces_info(
+	arg_account_index integer)
+    RETURNS TABLE(
+        tb_workspace_id integer,
+        tb_workspace_name character varying,
+        tb_workspace_type smallint,
+        tb_workspace_account_permission smallint,
+        tb_workspace_child_projects integer,
+        tb_workspace_child_reports integer)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	check_query boolean := false;
+	var_record RECORD;
+
+BEGIN
+	check_query := (select is_available_account from public.is_available_account(arg_account_index));
+	IF check_query is false then
+		tb_workspace_id := -1;
+		return next;
+	ELSE
+		FOR var_record IN
+			SELECT 	public.workspace.id,
+					public.workspace.name,
+					public.workspace.visibility,
+					public.ref_account_workspace.account_permission
+						FROM public.account
+					INNER JOIN public.ref_account_workspace ON public.account.id = public.ref_account_workspace.id_account
+					INNER JOIN public.workspace ON public.ref_account_workspace.id_workspace = public.workspace.id
+					WHERE public.account.id = arg_account_index
+		LOOP
+			-- workspace index, name, visibility, account_permission --
+			tb_workspace_id := var_record.id;
+			tb_workspace_name := var_record.name;
+			tb_workspace_type := var_record.visibility;
+			tb_workspace_account_permission := var_record.account_permission;
+
+			-- Project nums --
+			tb_workspace_child_projects :=
+				(SELECT COUNT(*) FROM public.project
+					WHERE public.project.belonged_workspace_id = var_record.id);
+
+			-- Report nums --
+			tb_workspace_child_reports :=
+				(SELECT COUNT(*) FROM public.project
+					INNER JOIN public.report on public.project.id = public.report.belonged_project_id
+					WHERE public.project.belonged_workspace_id = var_record.id);
+
+			RETURN NEXT;
+		END LOOP;
+
+
+		/*
+		-- member names --
+		SELECT public.account.account_name FROM public.workspace
+			INNER JOIN public.ref_account_workspace ON public.ref_account_workspace.id_workspace = public.workspace.id
+			INNER JOIN public.account ON public.account.id = public.ref_account_workspace.id_account
+			WHERE public.workspace.id = 5;
+		*/
+
+	END IF;
+END;$BODY$;

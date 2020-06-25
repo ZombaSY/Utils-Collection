@@ -1,0 +1,28 @@
+CREATE OR REPLACE FUNCTION public.insert_account_to_workspace(
+	arg_account_id integer,
+	arg_workspace_id integer,
+	arg_account_permission integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	return_code INTEGER;
+BEGIN
+	BEGIN
+		INSERT INTO public.ref_account_workspace VALUES(arg_account_id, arg_workspace_id, arg_account_permission);
+		EXCEPTION
+			WHEN SQLSTATE '23503' THEN
+				return_code := -100;    -- No account_index or workspace_index in DB --
+				RETURN return_code;
+			WHEN SQLSTATE '23505' THEN
+				return_code := -101;    -- Duplicated account_index and workspace_index --
+				RETURN return_code;
+	END;
+	return_code := 0;
+	RETURN return_code;
+END;
+$BODY$;

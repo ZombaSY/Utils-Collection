@@ -1,0 +1,53 @@
+CREATE OR REPLACE FUNCTION public.select_workspace(
+	arg_account_index integer)
+    RETURNS TABLE(workspace_id integer, workspace_name character varying)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	check_query boolean := false;
+
+BEGIN
+	check_query := (select is_available_accountsession from public.is_available_accountsession(arg_account_index));
+	IF check_query is false then
+		workspace_id := -1;
+		return next;
+	ELSE
+		return query (select public.workspace.id, public.workspace.name from public.account
+					  	inner join public.ref_account_workspace on public.account.id = public.ref_account_workspace.id_account
+					 	inner join public.workspace on public.ref_account_workspace.id_workspace =public.workspace.id
+					  		where public.account.id = arg_account_index);
+
+	/*
+	-- worksapce index, 이름, visibility, 사용자 권한 --
+	select 	public.workspace.id,
+			public.workspace.name,
+			public.workspace.visibility,
+			public.ref_account_workspace.account_permission
+				from public.account
+			inner join public.ref_account_workspace on public.account.id = public.ref_account_workspace.id_account
+			inner join public.workspace on public.ref_account_workspace.id_workspace =public.workspace.id
+			where public.account.id = 9
+
+	-- 레포트 갯수 --
+	SELECT COUNT(*) FROM public.project
+		INNER JOIN public.report on public.project.id = public.report.belonged_project_id
+		WHERE public.project.belonged_workspace_id = 5
+
+	-- 프로젝트 갯수 --
+	SELECT COUNT(*) FROM public.project
+		WHERE public.project.belonged_workspace_id = 5
+
+	-- 멤버 name들 --
+	SELECT public.account.account_name FROM public.workspace
+		INNER JOIN public.ref_account_workspace ON public.ref_account_workspace.id_workspace = public.workspace.id
+		INNER JOIN public.account ON public.account.id = public.ref_account_workspace.id_account
+		WHERE public.workspace.id = 5
+	*/
+
+	END IF;
+END;$BODY$;

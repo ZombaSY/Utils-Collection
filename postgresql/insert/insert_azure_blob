@@ -1,0 +1,39 @@
+CREATE OR REPLACE FUNCTION public.insert_azure_blob(
+	arg_cloud_path character,
+	arg_container_name character,
+	arg_input_file_size bigint,
+	arg_file_type character,
+	arg_experiment_id bigint)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	var_storage_limits BIGINT := 214748364800; /* 200GB */
+	var_storage_usage BIGINT;
+	var_blob_id BIGINT;
+	code INTEGER;
+BEGIN
+	var_storage_usage := (SELECT storage_usage FROM public.azure_cloud_container
+						  	WHERE cloud_container_name = arg_container_name);
+	IF var_storage_limits < (var_storage_usage + arg_input_file_size) THEN
+		code := -200;
+		RETURN code;
+	ELSE
+		INSERT INTO public.azure_cloud_blob(cloud_path, container_name, blob_size, blob_type)
+			VALUES (arg_cloud_path, arg_container_name, arg_input_file_size, arg_file_type);
+
+		IF arg_file_type = 'Source Code' THEN
+			var_blob_id := (SELECT id FROM public.azure_cloud_blob
+								WHERE cloud_path=arg_cloud_path);
+			UPDATE public.experiment SET code_blob_id = var_blob_id WHERE id = arg_experiment_id;
+		END IF;
+
+		code := 0;
+		RETURN code;
+	END IF;
+END
+$BODY$;

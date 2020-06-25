@@ -1,0 +1,32 @@
+CREATE OR REPLACE FUNCTION public.insert_account_to_project(
+	arg_account_index integer,
+	arg_invite_index integer,
+	arg_project_id integer,
+	arg_workspace_id integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+ check_query INTEGER:= -1;
+ r RECORD;
+BEGIN
+	check_query :=(select count(*) from public.ref_account_workspace where id_workspace = arg_workspace_id and (id_account = arg_account_index or id_account = arg_invite_index));
+	IF check_query = 2 THEN
+		FOR r IN(select * from public.ref_account_project
+					   where id_account = arg_account_index and id_project = arg_project_id)
+		LOOP
+		IF r.user_permission = 1 THEN
+			Insert into ref_account_project(id_account, id_project, user_state) values (arg_invite_index,arg_project_id,r.user_state);
+			RETURN 0;
+		ELSE
+			RETURN 510;
+		END IF;
+		END LOOP;
+	ELSE
+		RETURN 511;
+	END IF;
+END; $BODY$;

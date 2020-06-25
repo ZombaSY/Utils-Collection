@@ -1,0 +1,36 @@
+CREATE OR REPLACE FUNCTION public.select_one_project(
+	arg_account_index integer,
+	arg_project_index integer)
+    RETURNS TABLE(tb_code integer, tb_name character varying, tb_belonged_container_name character varying)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	is_available boolean;
+BEGIN
+
+	is_available := (SELECT * FROM public.is_available_ref_account_project(arg_account_index, arg_project_index));
+
+	IF is_available THEN
+		-- Get Project info to the Returning TABLE --
+		SELECT 	public.project.name,
+				public.azure_cloud_container.cloud_container_name
+					FROM public.project
+				INNER JOIN public.azure_cloud_container
+					ON public.project.belonged_workspace_id = public.azure_cloud_container.workspace_id
+				WHERE public.project.id = arg_project_index
+				INTO 	tb_name,
+						tb_belonged_container_name;
+
+		tb_code := 0;
+		RETURN NEXT;
+	ELSE
+		tb_code := -200;	-- No Matching account between id_account and id_project --
+		RETURN NEXT;
+	END IF;
+END;
+$BODY$;

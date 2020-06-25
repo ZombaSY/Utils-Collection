@@ -1,0 +1,44 @@
+CREATE OR REPLACE FUNCTION public.update_project_account_permission(
+	arg_account_index integer,
+	arg_project_index integer,
+	arg_alter_account_email text,
+	arg_alter_account_permission integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	v_user_permission INTEGER;
+	v_alter_account_index INTEGER;
+	return_code INTEGER;
+BEGIN
+
+	-- Check account's permission --
+	v_user_permission := (SELECT user_permission FROM public.ref_account_project
+						  	WHERE id_account = arg_account_index AND id_project = arg_project_index);
+
+	-- Get account index by email --
+	BEGIN
+		v_alter_account_index := (SELECT * FROM public.select_account_index(arg_alter_account_email));
+		EXCEPTION
+			WHEN SQLSTATE 'P0001' THEN
+				RETURN -101;
+	END;
+
+	IF v_user_permission = 1 THEN	-- Is Maintainer --
+
+		UPDATE public.ref_account_project
+			SET user_permission = arg_alter_account_permission
+			WHERE id_account = v_alter_account_index AND id_project = arg_project_index;
+
+		return_code := 0;
+		RETURN return_code;
+	ELSE
+		return_code := -100;	-- Permission Denied --
+		RETURN return_code;
+	END IF;
+END;
+$BODY$;

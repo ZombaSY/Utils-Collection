@@ -1,0 +1,22 @@
+CREATE OR REPLACE FUNCTION public.is_available_account_name(
+	arg_username character,
+	arg_account_index integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+BEGIN
+	BEGIN
+		UPDATE public.account SET account_name = arg_username WHERE id = arg_account_index;
+		EXCEPTION
+			WHEN SQLSTATE '23505' THEN
+				RAISE WARNING 'Duplicate API_KEY';
+				RETURN -201;
+	END;
+
+	RETURN 0;
+
+END; $BODY$;

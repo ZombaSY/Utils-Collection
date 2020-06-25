@@ -1,0 +1,20 @@
+-CREATE OR REPLACE FUNCTION public.is_available_apikey(
+	arg_api_key character,
+	arg_account_id character)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	cur_api_key character(32);
+BEGIN
+	cur_api_key := (SELECT api_key FROM public.api_key WHERE api_key=arg_api_key AND account_id=arg_account_id);
+	IF cur_api_key is NOT NULL THEN
+		RETURN TRUE;
+	ELSE
+		RETURN FALSE;
+	END IF;
+END;$BODY$;

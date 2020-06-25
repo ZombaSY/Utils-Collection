@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION public.insert_apikey(
+	arg_api_key character,
+	arg_account_id character)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+BEGIN
+	BEGIN
+		INSERT INTO public.api_key VALUES (arg_api_key, arg_account_id);
+		EXCEPTION
+			WHEN SQLSTATE '23503' THEN
+				RAISE WARNING 'No account_id in account table';
+				RETURN -200;
+			WHEN SQLSTATE '23505' THEN
+				RAISE WARNING 'Duplicate API_KEY';
+				RETURN -201;
+	END;
+
+	RETURN 0;
+
+END; $BODY$;

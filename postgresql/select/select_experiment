@@ -1,0 +1,29 @@
+CREATE OR REPLACE FUNCTION public.select_experiment(
+	arg_account_index integer,
+	arg_belonged_project_id integer)
+    RETURNS TABLE(tb_experiment_ids bigint, tb_experiment_names character varying, tb_experiment_logs text, tb_experiment_output_log text, tb_experiment_system_metrics text, tb_experiment_hyper_parameter text, tb_experiment_requirements text, tb_experiment_code_blob_id bigint, tb_experiment_image_blob text, tb_experiment_model_blob text, tb_experiment_creator bigint, tb_experiment_created_dated timestamp without time zone)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$BEGIN
+	RETURN QUERY
+		SELECT DISTINCT public.experiment.id,
+						public.experiment.name,
+						public.experiment.log,
+						array_to_string(public.experiment.output_log, E'\n', '*') ,
+						array_to_string(public.experiment.system_metrics, E'\n', '*'),
+						public.experiment.hyper_parameter,
+						public.experiment.requirements,
+						public.experiment.code_blob_id,
+						array_to_string(public.experiment.image_blob_id, E'\n', '*'),
+						array_to_string(public.experiment.model_blob_id, E'\n', '*'),
+						public.experiment.creator,
+						public.experiment.created_date
+							FROM public.account, public.workspace
+			LEFT JOIN public.experiment ON public.experiment.belonged_project_id = arg_belonged_project_id
+				WHERE public.account.id = arg_account_index
+					ORDER BY public.experiment.id DESC;
+END;$BODY$;

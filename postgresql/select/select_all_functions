@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION public.select_all_functions(
+	arg_schema_name text)
+    RETURNS TABLE(selected_functions information_schema.sql_identifier)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+BEGIN
+	RETURN QUERY (SELECT DISTINCT routines.routine_name
+		FROM information_schema.routines
+			LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
+				WHERE routines.specific_schema=quote_ident(arg_schema_name)
+					ORDER BY routines.routine_name);
+END;
+$BODY$;

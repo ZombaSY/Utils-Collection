@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION public.is_available_account(
+	arg_account_index integer,
+	arg_account_pwd character)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	select_query INTEGER;
+BEGIN
+	select_query := (SELECT id FROM public.account
+		WHERE id = arg_account_index AND account_pwd = arg_account_pwd);
+
+	IF select_query IS NOT NULL THEN
+		RETURN TRUE;
+	ELSE
+		RAISE WARNING 'No Account Matching account_index and account_pwd';
+		RETURN FALSE;
+	END IF;
+END; $BODY$;

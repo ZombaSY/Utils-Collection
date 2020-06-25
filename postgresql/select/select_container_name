@@ -1,0 +1,28 @@
+CREATE OR REPLACE FUNCTION public.select_container_name(
+	arg_api_key character,
+	arg_workspace_name character)
+    RETURNS character
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	check_query character(64);
+	select_query INTEGER;
+BEGIN
+	select_query := (SELECT public.workspace.id FROM public.api_key
+					INNER JOIN public.account ON public.api_key.account_id = public.account.account_id
+					INNER JOIN public.ref_account_workspace ON public.account.id = public.ref_account_workspace.id_account
+					INNER JOIN public.workspace on public.ref_account_workspace.id_workspace = public.workspace.id
+					 WHERE api_key=arg_api_key And public.workspace.name = arg_workspace_name);
+	IF select_query is NULL THEN
+		check_query :='150';
+		return check_query;
+	ELSE
+		check_query :=(SELECT cloud_container_name FROM public.azure_cloud_container
+					   	where workspace_id = select_query);
+		return check_query;
+	END IF;
+END; $BODY$;

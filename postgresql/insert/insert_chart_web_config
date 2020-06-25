@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION public.insert_chart_web_config(
+	arg_account_id integer,
+	arg_config text)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	return_code INT;
+BEGIN
+	INSERT INTO public.chart_web_config VALUES(arg_account_id, arg_config);
+	return_code := 0;
+	RETURN return_code;
+END;
+$BODY$;

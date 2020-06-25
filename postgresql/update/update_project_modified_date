@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION public.update_project_modified_date(
+	arg_project_id integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	return_code INTEGER;
+	return_id INTEGER;
+BEGIN
+	UPDATE public.project SET modified_date = CURRENT_TIMESTAMP WHERE id = arg_project_id RETURNING public.project.id INTO return_id;
+	IF return_id IS NULL THEN
+		return_code := 178 /* No Project ID */;
+		RETURN return_code;
+	ELSE
+		return_code := 0;
+		RETURN return_code;
+	END IF;
+END;
+$BODY$;

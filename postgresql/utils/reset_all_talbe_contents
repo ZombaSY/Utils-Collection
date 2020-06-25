@@ -1,0 +1,32 @@
+CREATE OR REPLACE FUNCTION public.reset_all_table_contents(
+	arg_schema_name text)
+    RETURNS void
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	object text;
+	schema_name_dot text;
+BEGIN
+	schema_name_dot := arg_schema_name || '.';
+
+	 -- REMOVE ALL TABLE CONTENTS IN SCHEMA --
+	FOR object in
+		SELECT table_name FROM information_schema.tables
+			WHERE table_schema = quote_ident(arg_schema_name)
+	LOOP
+		EXECUTE	'TRUNCATE ' || schema_name_dot || object || ' CASCADE';
+	END LOOP;
+
+	-- RESET ALL SEQUENCES --
+	FOR object IN
+		SELECT sequence_name::TEXT FROM information_schema.sequences
+			WHERE sequence_schema = quote_ident(arg_schema_name)
+	LOOP
+		EXECUTE 'ALTER SEQUENCE ' || schema_name_dot || object || ' RESTART;';
+	END LOOP;
+END
+$BODY$;

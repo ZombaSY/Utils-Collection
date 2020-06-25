@@ -1,0 +1,57 @@
+CREATE OR REPLACE FUNCTION public.select_account_name(
+	arg_account_index integer)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	select_query TEXT;
+BEGIN
+	select_query := (SELECT account_name FROM public.account WHERE id = arg_account_index);
+	RETURN select_query;
+END;
+$BODY$;
+
+----------------------------------------------------OVERLOADING----------------------------------------------------
+CREATE OR REPLACE FUNCTION public.select_account_name(
+	arg_project_id integer)
+    RETURNS character varying[]
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	r character varying(32)[];
+BEGIN
+	r :=array(SELECT public.account.account_name from public.ref_account_project
+			  inner join public.account on public.ref_account_project.id_account = public.account.id
+			  	where public.ref_account_project.id_project = arg_project_id and public.ref_account_project.user_state =0
+			  		order by public.ref_account_project.id_account asc);
+	return r;
+END;
+$BODY$;
+
+----------------------------------------------------OVERLOADING----------------------------------------------------
+CREATE OR REPLACE FUNCTION public.select_account_name(
+	arg_project_id integer)
+    RETURNS character varying[]
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	r character varying(32)[];
+BEGIN
+	r :=array(SELECT account.account_name from public.ref_account_project
+			  	inner join public.account on public.ref_account_project.id_account = public.account.id
+			  		where public.ref_account_project.id_project = arg_project_id and public.ref_account_project.user_state =1
+			  			order by public.ref_account_project.id_account asc);
+	return r;
+END;$BODY$;

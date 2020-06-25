@@ -1,0 +1,41 @@
+CREATE OR REPLACE FUNCTION public.update_project_settings(
+	arg_account_index integer,
+	arg_project_index integer,
+	arg_project_visibility integer,
+	arg_project_name text,
+	arg_project_description text)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	v_user_permission INTEGER;
+	return_code INTEGER;
+BEGIN
+	-- Check account's permission --
+	v_user_permission := (SELECT user_permission FROM public.ref_account_project
+						  	WHERE id_account = arg_account_index AND id_project = arg_project_index);
+
+	IF v_user_permission = 1 THEN	-- Is Maintainer --
+
+		-- Update project settings --
+		UPDATE public.project
+			SET visibility = arg_project_visibility, name = arg_project_name, description = arg_project_description
+			WHERE public.project.id = arg_project_index;
+
+		-- Change user_state who already belonged to projects --
+		UPDATE public.ref_account_project
+			SET user_state = 1
+			WHERE id_project = arg_project_index AND user_state != 1;
+
+		return_code := 0;
+		RETURN return_code;
+	ELSE
+		return_code := -100;	-- Permission Denied --
+		RETURN return_code;
+	END IF;
+END;
+$BODY$;

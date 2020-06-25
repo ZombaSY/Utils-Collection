@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION public.select_output_log(
+	arg_account_index integer,
+	arg_password character varying,
+	arg_experiment_id integer)
+    RETURNS text[]
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+is_available_account BOOLEAN;
+
+BEGIN
+    is_available_account := (SELECT * FROM public.is_available_account(arg_account_index, arg_password));
+
+    IF is_available_account IS TRUE THEN
+        return (SELECT output_log FROM public.experiment
+                    WHERE id = arg_experiment_id);
+    ELSE
+        return NULL;
+    END IF;
+END;$BODY$;

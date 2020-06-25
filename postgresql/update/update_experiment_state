@@ -1,0 +1,23 @@
+CREATE OR REPLACE FUNCTION public.update_experiment_state(
+	arg_api_key character,
+	arg_account_id character,
+	arg_experiment_id integer,
+	arg_experiment_state integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	is_available boolean;
+BEGIN
+	is_available :=(SELECT * FROM public.is_available_apikey(arg_api_key,arg_account_id));
+	IF is_available IS TRUE THEN
+		UPDATE public.experiment SET experiment_state = arg_experiment_state WHERE id = arg_experiment_id;
+		RETURN 0;
+	ELSE
+		RETURN 125;
+	END IF;
+END;$BODY$;

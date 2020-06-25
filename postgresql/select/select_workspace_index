@@ -1,0 +1,24 @@
+CREATE OR REPLACE FUNCTION public.select_workspace_index(
+	arg_api_key character varying,
+	arg_workspacename character varying)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	check_vaild integer := -1;
+BEGIN
+	check_vaild := (SELECT public.workspace.id FROM public.api_key
+						inner join public.account on public.api_key.account_id = public.account.account_id
+						inner join public.ref_account_workspace on public.account.id = public.ref_account_workspace.id_account
+						inner join public.workspace on public.ref_account_workspace.id_workspace = public.workspace.id
+							where public.api_key.api_key = arg_api_key and public.workspace.name = arg_workspacename);
+	IF check_vaild is NULL Then
+		return -1;
+	ELSE
+		return check_vaild;
+	END IF;
+END;$BODY$;

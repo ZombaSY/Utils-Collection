@@ -1,0 +1,45 @@
+CREATE OR REPLACE FUNCTION public.insert_project(
+	arg_account_index integer,
+	arg_project_name character,
+	arg_belonged_workspace_id integer,
+	arg_description character,
+	arg_visibility integer)
+    RETURNS TABLE(code integer)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	check_workspace BOOLEAN;
+	is_available_account BOOLEAN;
+	cur_project_id INTEGER;
+BEGIN
+	is_available_account := (SELECT * FROM public.is_available_account(arg_account_index));
+
+	IF is_available_account IS TRUE THEN
+		check_workspace := (SELECT * FROM public.is_available_ref_account_workspace(arg_account_index, arg_belonged_workspace_id));
+		IF check_workspace IS TRUE THEN
+			INSERT INTO public.project(
+				name, belonged_workspace_id, description, creator_id, administrator_id, visibility)
+				VALUES (arg_project_name, arg_belonged_workspace_id, arg_description, arg_account_index, arg_account_index, arg_visibility) RETURNING id INTO cur_project_id;
+			IF arg_visibility != 0 THEN
+				INSERT INTO public.ref_account_project(id_account,id_project,user_state, user_permission)
+												VALUES (arg_account_index,cur_project_id,1, 1);
+			ELSE
+				INSERT INTO public.ref_account_project(id_account,id_project, user_permission)
+												VALUES (arg_account_index,cur_project_id, 1);
+			END IF;
+			code := 0;
+			RETURN NEXT;
+		ELSE
+			code := -101;
+			RETURN NEXT;
+		END IF;
+	ELSE
+		code := -100;
+		RETURN NEXT;
+	END IF;
+END; $BODY$;

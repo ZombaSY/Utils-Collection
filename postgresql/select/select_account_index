@@ -1,0 +1,44 @@
+CREATE OR REPLACE FUNCTION public.select_account_index(
+	arg_account_email text)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	select_query TEXT;
+BEGIN
+	select_query := (SELECT id FROM public.account WHERE account_id = arg_account_email);
+
+	IF select_query IS NOT NULL THEN
+		RETURN select_query;
+	ELSE
+		RAISE EXCEPTION 'No Account Found!!!';
+	END IF;
+END;
+$BODY$;
+
+----------------------------------------------------OVERLOADING----------------------------------------------------
+CREATE OR REPLACE FUNCTION public.select_account_index(
+	arg_account_id character,
+	arg_account_pwd character)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	select_query INTEGER;
+BEGIN
+	select_query := (SELECT id FROM public.account
+	WHERE account_pwd = arg_account_pwd AND account_id = arg_account_id);
+	IF select_query IS NULL THEN
+		RAISE WARNING 'No Matching Account ID with acount_id and account_pwd';
+	END IF;
+	RETURN select_query;
+END; $BODY$;
+
