@@ -12,13 +12,18 @@ CREATE OR REPLACE FUNCTION public.insert_azure_blob(
 
 AS $BODY$
 DECLARE
-	var_storage_limits BIGINT := 214748364800; /* 200GB */
+	var_storage_limits BIGINT := 53687091200; /* 50GB */
+    var_workspace_personal INTEGER;
 	var_storage_usage BIGINT;
 	var_blob_id BIGINT;
 	code INTEGER;
 BEGIN
-	var_storage_usage := (SELECT storage_usage FROM public.azure_cloud_container
-						  	WHERE cloud_container_name = arg_container_name);
+	SELECT storage_usage, workspace_personnal FROM public.azure_cloud_container
+	    WHERE cloud_container_name = arg_container_name
+	    INTO var_storage_usage, var_workspace_personal;
+
+	var_storage_limits := var_storage_limits * var_workspace_personal;
+
 	IF var_storage_limits < (var_storage_usage + arg_input_file_size) THEN
 		code := -200;
 		RETURN code;

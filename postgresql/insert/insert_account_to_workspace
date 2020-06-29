@@ -14,12 +14,16 @@ DECLARE
 BEGIN
 	BEGIN
 		INSERT INTO public.ref_account_workspace VALUES(arg_account_id, arg_workspace_id, arg_account_permission);
+		-- Plus the workspace personal --
+		UPDATE public.azure_cloud_container
+			SET workspace_personnal = workspace_personnal + 1
+			WHERE workspace_id = arg_workspace_id;
 		EXCEPTION
 			WHEN SQLSTATE '23503' THEN
-				return_code := -100;    -- No account_index or workspace_index in DB --
+				return_code := -100; -- No account_index or workspace_index in DB --
 				RETURN return_code;
 			WHEN SQLSTATE '23505' THEN
-				return_code := -101;    -- Duplicated account_index and workspace_index --
+				return_code := -101; -- Duplicated account_index and workspace_index --
 				RETURN return_code;
 	END;
 	return_code := 0;

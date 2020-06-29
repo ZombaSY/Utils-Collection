@@ -15,6 +15,7 @@ DECLARE
  r RECORD;
 BEGIN
 	check_query :=(select count(*) from public.ref_account_workspace where id_workspace = arg_workspace_id and (id_account = arg_account_index or id_account = arg_invite_index));
+	-- ????? check query 가 뭘 찾는거죠 ????? --
 	IF check_query = 2 THEN
 		FOR r IN(select * from public.ref_account_project
 					   where id_account = arg_account_index and id_project = arg_project_id)

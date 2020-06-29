@@ -93,6 +93,11 @@ BEGIN
 				DELETE FROM public.workspace
 					WHERE id = v_workspace_id;
 
+				-- Reduce workspace personal in azure container --
+				UPDATE public.azure_cloud_container
+				    SET workspace_personnal = workspace_personnal - 1
+				    WHERE workspace_id = v_workspace_id;
+
 				-- Delete blob referencing deleted container --
 				DELETE FROM public.azure_cloud_blob
 					WHERE container_name = v_container_name;
