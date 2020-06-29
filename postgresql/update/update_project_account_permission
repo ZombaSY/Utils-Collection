@@ -13,6 +13,7 @@ AS $BODY$
 DECLARE
 	v_user_permission INTEGER;
 	v_alter_account_index INTEGER;
+    v_administrator_id INTEGER;
 	return_code INTEGER;
 BEGIN
 
@@ -30,12 +31,24 @@ BEGIN
 
 	IF v_user_permission = 1 THEN	-- Is Maintainer --
 
-		UPDATE public.ref_account_project
-			SET user_permission = arg_alter_account_permission
-			WHERE id_account = v_alter_account_index AND id_project = arg_project_index;
+		v_administrator_id :=
+			(SELECT administrator_id FROM public.project
+				INNER JOIN public.ref_account_project ON public.ref_account_project.id_project = public.project.id
+				WHERE public.ref_account_project.id_account = arg_account_index AND public.ref_account_project.id_project = arg_project_index);
 
-		return_code := 0;
-		RETURN return_code;
+		IF v_alter_account_index = v_administrator_id THEN
+			return_code := -101;    -- Cannot change admin's permission --
+			RETURN return_code;
+
+		ELSE
+            UPDATE public.ref_account_project
+                SET user_permission = arg_alter_account_permission
+                WHERE id_account = v_alter_account_index AND id_project = arg_project_index;
+
+            return_code := 0;
+            RETURN return_code;
+        END IF;
+
 	ELSE
 		return_code := -100;	-- Permission Denied --
 		RETURN return_code;

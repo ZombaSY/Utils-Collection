@@ -13,6 +13,7 @@ CREATE OR REPLACE FUNCTION public.update_project_settings(
 AS $BODY$
 DECLARE
 	v_user_permission INTEGER;
+    v_user_state INTEGER;
 	return_code INTEGER;
 BEGIN
 	-- Check account's permission --
@@ -26,10 +27,20 @@ BEGIN
 			SET visibility = arg_project_visibility, name = arg_project_name, description = arg_project_description
 			WHERE public.project.id = arg_project_index;
 
+		CASE arg_project_visibility
+			WHEN 0 THEN
+			    v_user_state := 0;
+			WHEN 1 THEN
+			    v_user_state := 1;
+			ELSE
+			    return_code := -101;    -- Invalid visibility parameter --
+			    RETURN return_code;
+		END CASE;
+
 		-- Change user_state who already belonged to projects --
 		UPDATE public.ref_account_project
-			SET user_state = 1
-			WHERE id_project = arg_project_index AND user_state != 1;
+			SET user_state = v_user_state
+			WHERE id_project = arg_project_index;
 
 		return_code := 0;
 		RETURN return_code;

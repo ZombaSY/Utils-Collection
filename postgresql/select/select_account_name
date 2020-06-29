@@ -28,9 +28,10 @@ AS $BODY$
 DECLARE
 	r character varying(32)[];
 BEGIN
+    -- Public only --
 	r :=array(SELECT public.account.account_name from public.ref_account_project
 			  inner join public.account on public.ref_account_project.id_account = public.account.id
-			  	where public.ref_account_project.id_project = arg_project_id and public.ref_account_project.user_state =0
+			  	where public.ref_account_project.id_project = arg_project_id and public.ref_account_project.user_state = 0
 			  		order by public.ref_account_project.id_account asc);
 	return r;
 END;
@@ -49,6 +50,7 @@ AS $BODY$
 DECLARE
 	r character varying(32)[];
 BEGIN
+    -- Private only --
 	r :=array(SELECT account.account_name from public.ref_account_project
 			  	inner join public.account on public.ref_account_project.id_account = public.account.id
 			  		where public.ref_account_project.id_project = arg_project_id and public.ref_account_project.user_state =1
