@@ -25,13 +25,18 @@ BEGIN
 				RETURN -101;
 	END;
 
-	IF (v_user_permission = 1) THEN	-- Is admmin
+	IF (v_user_permission = 1) THEN	-- Is admin
 
 	-- Delete account from reference table --
 		BEGIN
 			DELETE FROM public.ref_account_workspace
 				WHERE id_account = v_kicked_account_index AND id_workspace = arg_workspace_index
 					RETURNING id_account INTO return_code;
+		    -- Reduce workspace personal in container --
+		    UPDATE public.azure_cloud_container
+		        SET workspace_personnal = workspace_personnal - 1
+		        WHERE workspace_id = arg_workspace_index;
+
 			EXCEPTION
 				WHEN SQLSTATE 'P0003' THEN
 					DELETE FROM public.ref_account_workspace
@@ -48,7 +53,7 @@ BEGIN
 			RETURN return_code;
 		END IF;
 	ELSE
-		return_code := -100;	-- Kicker has no permission --\
+		return_code := -100;	-- Kicker has no permission --
 		RETURN return_code;
 	END IF;
 END;

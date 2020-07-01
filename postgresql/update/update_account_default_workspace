@@ -1,0 +1,39 @@
+CREATE OR REPLACE FUNCTION public.update_account_default_workspace(
+	arg_account_index integer,
+	arg_current_workspace_index integer,
+	arg_changing_workspace_index integer)
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+
+AS $BODY$
+DECLARE
+	return_code INTEGER;
+    v_object INTEGER;
+    v_check_query INTEGER;
+BEGIN
+    v_check_query :=
+        (SELECT id_account FROM public.ref_account_workspace
+            WHERE id_account = arg_account_index AND id_workspace = arg_changing_workspace_index);
+    IF v_check_query IS NOT NULL THEN
+        UPDATE public.account
+            SET default_workspace = arg_changing_workspace_index
+            WHERE id = arg_account_index AND default_workspace = arg_current_workspace_index
+            RETURNING id INTO v_object;
+
+        IF v_object IS NULL THEN
+            return_code := -1;    -- No row updated --
+            RETURN return_code;
+        ELSE
+            return_code := 0;
+            RETURN return_code;
+        END IF;
+    ELSE
+        return_code := -100;    -- This account is not belonged to changing workspace --
+        RETURN return_code;
+    END IF;
+
+END
+$BODY$;

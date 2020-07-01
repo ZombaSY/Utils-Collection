@@ -1,5 +1,6 @@
 CREATE OR REPLACE FUNCTION public.insert_account_to_workspace(
 	arg_account_id integer,
+	arg_invited_account_email TEXT,
 	arg_workspace_id integer,
 	arg_account_permission integer)
     RETURNS integer
@@ -9,23 +10,50 @@ CREATE OR REPLACE FUNCTION public.insert_account_to_workspace(
     VOLATILE
 
 AS $BODY$
+    /*
+     To Do
+     1. Check account's api key
+     */
 DECLARE
+    var_account_permission INTEGER;
+    var_invited_account_index INTEGER;
 	return_code INTEGER;
 BEGIN
-	BEGIN
-		INSERT INTO public.ref_account_workspace VALUES(arg_account_id, arg_workspace_id, arg_account_permission);
-		-- Plus the workspace personal --
-		UPDATE public.azure_cloud_container
-			SET workspace_personnal = workspace_personnal + 1
-			WHERE workspace_id = arg_workspace_id;
-		EXCEPTION
-			WHEN SQLSTATE '23503' THEN
-				return_code := -100; -- No account_index or workspace_index in DB --
-				RETURN return_code;
-			WHEN SQLSTATE '23505' THEN
-				return_code := -101; -- Duplicated account_index and workspace_index --
-				RETURN return_code;
-	END;
+    var_account_permission :=
+        (SELECT account_permission FROM public.ref_account_workspace
+            WHERE id_account = arg_account_id AND id_workspace = arg_workspace_id);
+    IF var_account_permission = 1 THEN
+        var_invited_account_index :=
+            (SELECT id FROM public.account
+                WHERE account_id = arg_invited_account_email);
+
+        IF var_invited_account_index IS NOT NULL THEN   -- Has email in account table --
+            BEGIN
+                INSERT INTO public.ref_account_workspace
+                    VALUES(var_invited_account_index, arg_workspace_id, arg_account_permission);
+
+                -- Plus the workspace personal --
+                UPDATE public.azure_cloud_container
+                    SET workspace_personnal = workspace_personnal + 1
+                    WHERE workspace_id = arg_workspace_id;
+                EXCEPTION
+                    WHEN SQLSTATE '23503' THEN
+                        return_code := -100; -- No account_index or workspace_index in DB --
+                        RETURN return_code;
+                    WHEN SQLSTATE '23505' THEN
+                        return_code := -101; -- Duplicated account_index and workspace_index --
+                        RETURN return_code;
+            END;
+        ELSE
+            return_code := -103;    -- No email in account table --
+            RETURN return_code;
+        END IF;
+
+    ELSE
+        return_code := -102;    -- Permission denied --
+        RETURN return_code;
+    END IF;
+
 	return_code := 0;
 	RETURN return_code;
 END;

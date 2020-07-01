@@ -13,6 +13,7 @@ AS $BODY$
 DECLARE
 	v_workspace_id INTEGER;
 	v_project_id INTEGER;
+    v_project_name TEXT;
 	v_left_accounts INTEGER;
 	v_container_name TEXT;
 	v_container_names TEXT;
@@ -47,7 +48,7 @@ BEGIN
 				-- Finally delete project --
 				DELETE FROM public.project
 					WHERE id = v_project_id
-					RETURNING belonged_workspace_id INTO v_workspace_id;
+					RETURNING belonged_workspace_id, name INTO v_workspace_id, v_project_name;
 
 				v_container_name :=
 					(SELECT cloud_container_name FROM public.azure_cloud_container
@@ -55,7 +56,7 @@ BEGIN
 
 				-- Delete blob referencing deleted project --
 				DELETE FROM public.azure_cloud_blob
-					WHERE container_name = v_container_name AND cloud_path LIKE quote_ident(v_project_id || '%');
+					WHERE container_name = v_container_name AND cloud_path LIKE quote_ident(v_project_name || '%');
 
 				-- Update container left usage --
 
