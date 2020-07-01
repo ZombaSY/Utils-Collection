@@ -1,0 +1,131 @@
+CREATE OR REPLACE FUNCTION public.select_project(
+	arg_belonged_workspace_id integer,
+	arg_account_index integer)
+    RETURNS TABLE(
+        id integer,
+        name character varying,
+        description character varying,
+        creator_id integer,
+        administrator_id integer,
+        created_date timestamp without time zone,
+        modified_date timestamp without time zone,
+        visibility smallint,
+        user_name_arry text,
+        user_index_arry text,
+        user_count integer,
+        experiment_count integer,
+        report_count integer)
+
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	r RECORD;
+	cur_arry character varying(32)[];
+	cur_arryid integer[];
+	check_query boolean;
+BEGIN
+	FOR r IN (SELECT * FROM public.project
+			  	where belonged_workspace_id =arg_belonged_workspace_id)
+	LOOP
+		id := r.id;
+		name := r.name;
+
+		description := r.description;
+		creator_id := r.creator_id;
+		administrator_id := r.administrator_id;
+		created_date :=r.created_date;
+		modified_date :=r.modified_date;
+		visibility :=r.visibility;
+
+		IF visibility = 0 THEN
+			cur_arry :=(select select_account_name from public.select_account_name(r.id));
+			cur_arryid := (array(select id_account from public.ref_account_project
+								 where id_project = id and user_state = 0 order by id_account ASC ));
+		ELSE
+			check_query :=(select is_available_private_project from public.is_available_private_project(id,arg_account_index));
+			IF check_query is true then
+				cur_arry := (select select_account_name from public.select_account_name(r.id));
+				cur_arryid := (array(select id_account from public.ref_account_project
+									 where id_project = id and user_state =1 order by id_account ASC));
+			ELSE
+				continue;
+			END IF;
+		END IF;
+		user_name_arry := (SELECT array_to_string(cur_arry,';'));
+		user_index_arry := (SELECT array_to_string(cur_arryid,';'));
+		experiment_count :=(SELECT COUNT(*) FROM public.experiment WHERE belonged_project_id=r.id);
+		report_count :=(SELECT COUNT(*) FROM public.report WHERE belonged_project_id=r.id);
+		user_count :=(SELECT array_length(cur_arry,1));
+		RETURN NEXT;
+	END LOOP;
+END;
+$BODY$;
+
+------------------------------------------------ Overloading -------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.select_project_in_workspace(
+	arg_account_index integer,
+	arg_belonged_workspace_index integer)
+    RETURNS TABLE(
+        tb_id integer,
+        tb_name character varying,
+        tb_description character varying,
+        tb_creator_id integer,
+        tb_administrator_id integer,
+        tb_created_date timestamp without time zone,
+        tb_modified_date timestamp without time zone,
+        tb_visibility smallint,
+        tb_user_name_array text,
+        tb_user_email_array text,
+        tb_user_permission_array text,
+        tb_user_count integer,
+        tb_experiment_count integer,
+        tb_report_count integer)
+    LANGUAGE 'plpgsql'
+
+    COST 100
+    VOLATILE
+    ROWS 1000
+
+AS $BODY$
+DECLARE
+	r RECORD;
+    v_account_name TEXT;
+    v_account_email TEXT;
+    v_account_permission TEXT;
+    v_account_counter INTEGER;
+    return_code INTEGER;
+BEGIN
+	FOR r IN (SELECT * FROM public.project
+			  	where belonged_workspace_id =arg_belonged_workspace_index)
+	LOOP
+		SELECT * FROM public.select_account_info_from_project(r.id, r.visibility, arg_account_index)
+            INTO return_code, v_account_name, v_account_email, v_account_permission, v_account_counter;
+
+		-- If got an information from above function, fill the return table --
+		IF return_code = 0 THEN
+            tb_id := r.id;
+            tb_name := r.name;
+            tb_description := r.description;
+            tb_creator_id := r.creator_id;
+            tb_administrator_id := r.administrator_id;
+            tb_created_date :=r.created_date;
+            tb_modified_date :=r.modified_date;
+            tb_visibility :=r.visibility;
+
+            tb_user_name_array := v_account_name;
+            tb_user_email_array := v_account_email;
+            tb_user_permission_array := v_account_permission;
+            tb_user_count := v_account_counter;
+
+            tb_experiment_count :=(SELECT COUNT(*) FROM public.experiment WHERE belonged_project_id=r.id);
+            tb_report_count :=(SELECT COUNT(*) FROM public.report WHERE belonged_project_id=r.id);
+            RETURN NEXT;
+        END IF;
+	END LOOP;
+END;
+$BODY$;
