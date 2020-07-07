@@ -32,6 +32,7 @@ BEGIN
 			DELETE FROM public.ref_account_workspace
 				WHERE id_account = v_kicked_account_index AND id_workspace = arg_workspace_index
 					RETURNING id_account INTO return_code;
+
 		    -- Reduce workspace personal in container --
 		    UPDATE public.azure_cloud_container
 		        SET workspace_personnal = workspace_personnal - 1

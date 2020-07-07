@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/postgresql/delete/delete_account_from_digo" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/delete/delete_account_from_workspace" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/insert/insert_account_to_project" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/insert/insert_account_to_workspace" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/insert/insert_azure_blob" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/insert/insert_project" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/select/select_account_name" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/update/update_azure_sas_token" dialect="GenericSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/update/update_project_account_permission" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/postgresql/update/update_project_settings" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />
   </component>
 </project>

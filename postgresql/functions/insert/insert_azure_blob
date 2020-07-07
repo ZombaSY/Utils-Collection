@@ -28,8 +28,8 @@ BEGIN
 		code := -200;
 		RETURN code;
 	ELSE
-		INSERT INTO public.azure_cloud_blob(cloud_path, container_name, blob_size, blob_type)
-			VALUES (arg_cloud_path, arg_container_name, arg_input_file_size, arg_file_type);
+		INSERT INTO public.azure_cloud_blob(cloud_path, container_name, blob_size, blob_type, belonged_experiment_id)
+			VALUES (arg_cloud_path, arg_container_name, arg_input_file_size, arg_file_type, arg_experiment_id);
 
 		IF arg_file_type = 'Source Code' THEN
 			var_blob_id := (SELECT id FROM public.azure_cloud_blob

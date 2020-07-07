@@ -1,8 +1,7 @@
 CREATE OR REPLACE FUNCTION public.delete_experiment(
 	arg_account_index INTEGER,
 	arg_workspace_index INTEGER,
-	arg_project_index INTEGER,
-	arg_experiment_index INTEGER,
+	arg_experiment_indices BIGINT[],
 	ignore_permission BOOLEAN)
     RETURNS TABLE(
         tb_code INTEGER,
@@ -16,9 +15,6 @@ CREATE OR REPLACE FUNCTION public.delete_experiment(
 AS $BODY$
 DECLARE
     v_record RECORD;
-    v_experiment_index INTEGER;
-    v_project_name TEXT;
-    v_experiment_name TEXT;
     v_container_name TEXT;
     v_cloud_paths TEXT;
     v_deleted_blob_sizes BIGINT := 0;
@@ -32,42 +28,24 @@ BEGIN
         -- Check has permission --
         check_query :=
             (SELECT id FROM public.experiment
-                WHERE public.experiment.id = arg_experiment_index AND creator = arg_account_index);
+                INNER JOIN public.ref_account_project ON public.ref_account_project.id_project = public.experiment.belonged_project_id
+                WHERE public.experiment.id = ANY(arg_experiment_indices) AND
+                      user_permission = 1 AND
+                      public.ref_account_project.id_account = arg_account_index
+                LIMIT 1);
 
         IF check_query IS NOT NULL THEN
 
-            -- Delete experiment --
-            DELETE FROM public.experiment
-                WHERE id = arg_experiment_index
-                RETURNING id INTO v_experiment_index;
-
-            IF v_experiment_index IS NULL THEN
-                tb_code := -1;  -- No row deleted --
-                RETURN NEXT;
-            END IF;
-
             -- Get names to delete azure cloud blobs --
-            SELECT public.experiment.name,
-                   public.project.name,
-                   cloud_container_name
-                   FROM public.experiment
-                INNER JOIN public.project ON
-                    public.experiment.belonged_project_id = public.project.id
-                INNER JOIN public.azure_cloud_container ON
-                    public.project.belonged_workspace_id = public.azure_cloud_container.workspace_id
-                WHERE public.experiment.id = arg_experiment_index AND
-                      public.project.id = arg_project_index AND
-                      public.azure_cloud_container.workspace_id = arg_workspace_index
-                INTO v_experiment_name, v_project_name, v_container_name;
+            v_container_name :=
+                (SELECT cloud_container_name FROM public.azure_cloud_container
+                WHERE workspace_id = arg_workspace_index);
 
-            -- @@@@@@@@@@@@@@@@@@@@@ azure blob 구조 바꾸기. path 형태에서 column 에 종속되게
-
-            -- 구조 바뀌면 지울 때 다르게 지워야됨
             -- Delete blob referencing deleted experiment --
             FOR v_record IN
                 DELETE FROM public.azure_cloud_blob
                     WHERE container_name = v_container_name AND
-                          cloud_path LIKE v_project_name || '/' || v_experiment_name || '%'
+                          belonged_experiment_id = ANY(arg_experiment_indices)
                     RETURNING cloud_path, blob_size
             LOOP
 
@@ -86,6 +64,9 @@ BEGIN
                 SET storage_usage = storage_usage - v_deleted_blob_sizes
                 WHERE cloud_container_name = v_container_name;
 
+            -- Finally delete experiment --
+            DELETE FROM public.experiment
+                WHERE id = ANY(arg_experiment_indices);
 
             -- Returning blob cloud paths to remove real blobs in azure cloud server --
             tb_code := 0;
@@ -100,40 +81,16 @@ BEGIN
     ------------------------- Called from internal function -------------------------
     ELSE
 
-        -- Release account from project --
-        DELETE FROM public.ref_account_project
-            WHERE id_project = arg_project_index;
-
-        -- Delete experiment --
-        DELETE FROM public.experiment
-            WHERE id = arg_experiment_index
-            RETURNING id INTO v_experiment_index;
-
-        IF v_experiment_index IS NULL THEN
-            tb_code := -1;  -- No row deleted --
-            RETURN NEXT;
-        END IF;
-
-
-        SELECT public.experiment.name,
-               public.project.name,
-               cloud_container_name
-               FROM public.experiment
-            INNER JOIN public.project ON
-                public.experiment.belonged_project_id = public.project.id
-            INNER JOIN public.azure_cloud_container ON
-                public.project.belonged_workspace_id = public.azure_cloud_container.workspace_id
-            WHERE public.experiment.id = arg_experiment_index AND
-                  public.project.id = arg_project_index AND
-                  public.azure_cloud_container.workspace_id = arg_workspace_index
-            INTO v_experiment_name, v_project_name, v_container_name;
-
+         -- Get names to delete azure cloud blobs --
+        v_container_name :=
+            (SELECT cloud_container_name FROM public.azure_cloud_container
+            WHERE workspace_id = arg_workspace_index);
 
         -- Delete blob referencing deleted experiment --
         FOR v_record IN
             DELETE FROM public.azure_cloud_blob
                 WHERE container_name = v_container_name AND
-                      cloud_path LIKE v_project_name || '/' || v_experiment_name || '%'
+                      belonged_experiment_id = ANY(arg_experiment_indices)
                 RETURNING cloud_path, blob_size
         LOOP
 
@@ -152,6 +109,9 @@ BEGIN
             SET storage_usage = storage_usage - v_deleted_blob_sizes
             WHERE cloud_container_name = v_container_name;
 
+        -- Finally delete experiment --
+        DELETE FROM public.experiment
+            WHERE id = ANY(arg_experiment_indices);
 
         -- Returning blob cloud paths to remove real blobs in azure cloud server --
         tb_code := 0;

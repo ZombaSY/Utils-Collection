@@ -1,0 +1,16 @@
+CREATE TABLE public.azure_cloud_container
+(
+    cloud_container_name character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    workspace_id integer NOT NULL,
+    workspace_personnal integer NOT NULL DEFAULT 1,
+    storage_usage bigint NOT NULL DEFAULT 0,
+    sas_key character varying COLLATE pg_catalog."default",
+    CONSTRAINT azure_cloud_container_pkey PRIMARY KEY (cloud_container_name),
+    CONSTRAINT azure_cloud_container_cloud_container_name_key UNIQUE (cloud_container_name),
+    CONSTRAINT azure_cloud_container_workspace_id_fkey FOREIGN KEY (workspace_id)
+        REFERENCES public.workspace (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;

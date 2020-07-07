@@ -1,0 +1,21 @@
+CREATE TABLE public.activity_log
+(
+    workspace_id integer NOT NULL,
+    command integer NOT NULL,
+    code integer NOT NULL,
+    account_id integer NOT NULL,
+    date_time timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    project_name character varying COLLATE pg_catalog."default",
+    model_name character varying COLLATE pg_catalog."default",
+    report_name character varying COLLATE pg_catalog."default",
+    CONSTRAINT activity_log_account_id_fkey FOREIGN KEY (account_id)
+        REFERENCES public.account (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT activity_log_workspace_id_fkey FOREIGN KEY (workspace_id)
+        REFERENCES public.workspace (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;

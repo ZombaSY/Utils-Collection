@@ -1,0 +1,4 @@
+CREATE TRIGGER before_delete_azure_cloud_blob
+    BEFORE DELETE ON public.azure_cloud_blob
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_container_left_storage();

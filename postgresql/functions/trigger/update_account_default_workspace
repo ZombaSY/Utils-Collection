@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION update_container_left_storage()
+    RETURNS TRIGGER
+AS
+$$
+
+BEGIN
+    UPDATE public.azure_cloud_container
+        SET storage_usage = storage_usage - old.blob_size
+        WHERE workspace_id = old.container_name;
+    RETURN old;
+END;
+$$
+LANGUAGE 'plpgsql';

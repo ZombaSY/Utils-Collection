@@ -1,0 +1,21 @@
+CREATE TABLE public.azure_cloud_blob
+(
+    id integer NOT NULL DEFAULT nextval('azure_cloud_blob_id_seq'::regclass),
+    cloud_path text COLLATE pg_catalog."default" NOT NULL,
+    container_name character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    blob_type character varying(16) COLLATE pg_catalog."default",
+    blob_size bigint DEFAULT 0,
+    date_time timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    belonged_experiment_id bigint NOT NULL DEFAULT 0,
+    CONSTRAINT azure_cloud_blob_pkey PRIMARY KEY (id),
+    CONSTRAINT belonged_experiment_id_fkey FOREIGN KEY (belonged_experiment_id)
+        REFERENCES public.experiment (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT container_name_fkey FOREIGN KEY (container_name)
+        REFERENCES public.azure_cloud_container (cloud_container_name) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;

@@ -1,0 +1,13 @@
+CREATE TABLE public.api_key
+(
+    api_key character varying(32) COLLATE pg_catalog."default" NOT NULL,
+    account_id character varying(64) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT api_key_pkey PRIMARY KEY (api_key),
+    CONSTRAINT api_key_api_key_account_id_key UNIQUE (api_key, account_id),
+    CONSTRAINT api_key_account_id_fkey FOREIGN KEY (account_id)
+        REFERENCES public.account (account_id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
