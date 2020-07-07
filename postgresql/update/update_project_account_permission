@@ -23,10 +23,10 @@ BEGIN
 
 	-- Get account index by email --
 	BEGIN
-		v_alter_account_index := (SELECT * FROM public.select_account_index(arg_alter_account_email));
+		v_alter_account_index := (SELECT * FROM public.get_account_index(arg_alter_account_email));
 		EXCEPTION
 			WHEN SQLSTATE 'P0001' THEN
-				RETURN -101;
+				RETURN -102;
 	END;
 
 	IF v_user_permission = 1 THEN	-- Is Maintainer --

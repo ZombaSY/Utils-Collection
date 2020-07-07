@@ -5,8 +5,8 @@ CREATE OR REPLACE FUNCTION public.select_project_in_workspace(
         tb_id integer,
         tb_name character varying,
         tb_description character varying,
-        tb_creator_id integer,
-        tb_administrator_id integer,
+        tb_creator_email TEXT,
+        tb_admin_email TEXT,
         tb_created_date timestamp without time zone,
         tb_modified_date timestamp without time zone,
         tb_visibility smallint,
@@ -42,8 +42,6 @@ BEGIN
             tb_id := r.id;
             tb_name := r.name;
             tb_description := r.description;
-            tb_creator_id := r.creator_id;
-            tb_administrator_id := r.administrator_id;
             tb_created_date :=r.created_date;
             tb_modified_date :=r.modified_date;
             tb_visibility :=r.visibility;
@@ -53,7 +51,14 @@ BEGIN
             tb_user_permission_array := v_account_permission;
             tb_user_count := v_account_counter;
 
-            tb_experiment_count :=(SELECT COUNT(*) FROM public.experiment WHERE belonged_project_id=r.id);
+            tb_creator_email := (SELECT DISTINCT public.account.account_id FROM public.account
+                                    INNER JOIN public.project ON public.account.id = public.project.creator_id
+                                    WHERE public.account.id = r.creator_id AND public.project.creator_id = r.creator_id);
+            tb_admin_email := (SELECT DISTINCT public.account.account_id FROM public.account
+                                    INNER JOIN public.project ON public.account.id = public.project.administrator_id
+                                    WHERE public.account.id = r.administrator_id AND public.project.creator_id = r.administrator_id);
+
+            tb_experiment_count := (SELECT COUNT(*) FROM public.experiment WHERE belonged_project_id=r.id);
             tb_report_count :=(SELECT COUNT(*) FROM public.report WHERE belonged_project_id=r.id);
             RETURN NEXT;
         END IF;

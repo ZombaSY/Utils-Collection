@@ -2,7 +2,11 @@ CREATE OR REPLACE FUNCTION public.delete_account_from_digo(
 	arg_account_index integer,
 	arg_account_email text,
 	arg_account_name text)
-    RETURNS TABLE(tb_code integer, tb_container_name text)
+    RETURNS TABLE(
+        tb_code INTEGER,
+        tb_container_name TEXT,
+        tb_deleted_project_belonged_container_name TEXT,
+        tb_deleted_project_blob_names TEXT)
     LANGUAGE 'plpgsql'
 
     COST 100
@@ -13,7 +17,6 @@ AS $BODY$
 DECLARE
 	v_workspace_id INTEGER;
 	v_project_id INTEGER;
-    v_project_name TEXT;
 	v_left_accounts INTEGER;
 	v_container_name TEXT;
 	v_container_names TEXT;
@@ -21,6 +24,7 @@ DECLARE
 	v_account_index INTEGER;
 
 BEGIN
+
 	-- Check account --
 	v_account_index :=
 		(SELECT id FROM public.account
@@ -31,6 +35,7 @@ BEGIN
 		RETURN NEXT;
 
 	ELSE
+
 		-- Delete account from ref_account_project --
 		FOR v_project_id IN
 			DELETE FROM public.ref_account_project
@@ -45,21 +50,9 @@ BEGIN
 
 			IF v_left_accounts = 0 THEN
 
-				-- Finally delete project --
-				DELETE FROM public.project
-					WHERE id = v_project_id
-					RETURNING belonged_workspace_id, name INTO v_workspace_id, v_project_name;
-
-				v_container_name :=
-					(SELECT cloud_container_name FROM public.azure_cloud_container
-						WHERE workspace_id = v_workspace_id);
-
-				-- Delete blob referencing deleted project --
-				DELETE FROM public.azure_cloud_blob
-					WHERE container_name = v_container_name AND cloud_path LIKE quote_ident(v_project_name || '%');
-
-				-- Update container left usage --
-
+			    -- Delete Project --
+				SELECT * FROM public.delete_project(arg_account_index, v_project_id, TRUE)
+				    INTO tb_code, tb_deleted_project_belonged_container_name, tb_deleted_project_blob_names;
 
 			END IF;
 		END LOOP;

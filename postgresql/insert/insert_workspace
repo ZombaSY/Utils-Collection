@@ -19,21 +19,24 @@ DECLARE
 	check_name CHARACTER varying(32);
 BEGIN
 	select_query := (SELECT id FROM public.account
-					 	WHERE id=arg_account_index);
+					 	WHERE id = arg_account_index);
 	IF select_query is NULL THEN
 		check_query := 123;
 		return check_query;
 	ELSE
 		check_name := (SELECT name FROM public.workspace
 					   	INNER JOIN public.ref_account_workspace ON public.workspace.id = public.ref_account_workspace.id_workspace
-					   		WHERE public.ref_account_workspace.id_account = select_query AND public.workspace.visibility = arg_visibility AND public.workspace.name=arg_workspace_name);
+					   		WHERE public.ref_account_workspace.id_account = select_query AND
+					   		      public.workspace.visibility = arg_visibility AND
+					   		      public.workspace.name=arg_workspace_name);
 		IF check_name is NULL THEN
-			INSERT INTO public.workspace(name,visibility)
-				VALUES (arg_workspace_name,arg_visibility)
-					RETURNING id INTO cur_id_workspace;
+			INSERT INTO public.workspace(name,visibility, admin_id)
+				VALUES (arg_workspace_name, arg_visibility, arg_account_index)
+				RETURNING id INTO cur_id_workspace;
 
 			UPDATE public.account set default_workspace = cur_id_workspace
-				WHERE id = select_query RETURNING id INTO cur_id_account;
+				WHERE id = select_query
+			    RETURNING id INTO cur_id_account;
 
 			INSERT INTO public.ref_account_workspace(id_account, id_workspace, account_permission)
 				VALUES (cur_id_account, cur_id_workspace, arg_account_permission);
