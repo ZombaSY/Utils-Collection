@@ -7,12 +7,10 @@ import os
 2020-03-05 sunyong 
 """
 
-CROP_SIZE = 512
+# Parameters
+CROP_SIZE = 256     # Must larger than original image
+CROP_ITERATION = 2  # Iteration per image
 DATASET_PATH = 'dataset/'
-
-
-class StaticVariable:
-    counter = 0
 
 
 def mask_image(src):
@@ -38,10 +36,12 @@ def image_contrast_stretching(src):
     return np.array(src, dtype=np.uint8)
 
 
-def image_pre_process(src, mode='normal'):
+def image_pre_process(src, mode='normal', masking=False):
     img = cv2.medianBlur(src, 3)
     img = image_contrast_stretching(img)
-    img = mask_image(img)
+
+    if masking:
+        img = mask_image(img)
 
     if mode is 'pre':
         selem = disk(1)
@@ -54,7 +54,7 @@ def image_pre_process(src, mode='normal'):
     return img
 
 
-def mk_crop_image(src, output_dir, crop_iteration=1):
+def mk_crop_image(src, output_dir, input_fn, crop_iteration=1):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -66,6 +66,9 @@ def mk_crop_image(src, output_dir, crop_iteration=1):
     for i in range(crop_iteration):
         ratio_x_max = 1 - (CROP_SIZE / img_w)
         ratio_y_max = 1 - (CROP_SIZE / img_h)
+
+        if ratio_x_max <= 0 or ratio_y_max <= 0:
+            raise Exception('Invalid crop size error!!!')
 
         while True:
             random_crop_area_x = np.random.random()
@@ -83,20 +86,23 @@ def mk_crop_image(src, output_dir, crop_iteration=1):
 
         save_img = cropped_img
 
-        file_name = str(StaticVariable.counter).zfill(5) + '.jpg'
+        fn, _ = os.path.splitext(input_fn)
+
+        file_name = fn + str(i).zfill(3) + '.jpg'
         cv2.imwrite(output_dir + file_name, save_img)
 
-        print(file_name + '\t successfully saved!')
-        StaticVariable.counter += 1
+        print(file_name + '\t  saved!')
 
 
 def main():
     file_list = os.listdir(DATASET_PATH)
 
     for idx, fn in enumerate(file_list):
-        img = cv2.imread(DATASET_PATH + fn, cv2.IMREAD_GRAYSCALE)
-        img = image_pre_process(img, mode='normal')
-        mk_crop_image(img, output_dir='cropped image/', crop_iteration=2)
+        img_path = DATASET_PATH + fn
+        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+
+        img = image_pre_process(img, mode='normal', masking=False)
+        mk_crop_image(img, output_dir='crop_large_image/', input_fn=fn, crop_iteration=CROP_ITERATION)
 
 
 if __name__ == '__main__':
