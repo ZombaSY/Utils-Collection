@@ -10,11 +10,11 @@ for idx, image_name in enumerate(image_list):
 
     f_read = open(image_path, 'rb')
 
-    if image_path[-5] == '1':   # condition 1
+    if image_path[-5] == '1':       # condition 1
         f_write_input = open(os.path.join(transfer_destination_input, image_name), 'wb')
         f_write_input.write(f_read.read())
         f_write_input.close()
-    elif image_path[-5] == '2': # condition 2
+    elif image_path[-5] == '2':     # condition 2
         f_write_output = open(os.path.join(transfer_destination_output, image_name), 'wb')
         f_write_output.write(f_read.read())
         f_write_output.close()
