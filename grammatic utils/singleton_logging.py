@@ -30,3 +30,13 @@ class Singleton(type):
 # combine it!
 class Log(Logger, metaclass=Singleton):
     pass
+
+
+def main():
+
+    logger = Log()
+    logger.debug('hello world!')
+
+
+if __name__ == '__main__':
+    main()
