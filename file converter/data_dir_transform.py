@@ -1,8 +1,8 @@
 import os
 
-image_dir = 'A:/Users/SSY/Desktop/image_calibration_dataset/dataset'
-transfer_destination_input = 'A:/Users/SSY/Desktop/image_calibration_dataset/A'
-transfer_destination_output = 'A:/Users/SSY/Desktop/image_calibration_dataset/B'
+image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/ORIGINAL'
+transfer_destination_input = 'A:/Users/SSY/Desktop/dataset/cud_calibration/ORIGINAL/A'
+transfer_destination_output = 'A:/Users/SSY/Desktop/dataset/cud_calibration/ORIGINAL/B'
 image_list = os.listdir(image_dir)
 
 for idx, image_name in enumerate(image_list):
@@ -19,7 +19,7 @@ for idx, image_name in enumerate(image_list):
         f_write_output.write(f_read.read())
         f_write_output.close()
     else:
-        Exception('Unexpected Condition!!!')
+        print('Unexpected condition for', image_path)
 
     f_read.close()
 
