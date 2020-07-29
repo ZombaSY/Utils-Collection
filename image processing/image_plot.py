@@ -12,14 +12,14 @@ real_in_list = os.listdir(real_in_dir)
 real_out_list = os.listdir(real_out_dir)
 fake_out_list = os.listdir(fake_out_dir)
 
-image_show_col = 50
+image_show_row = 50
 
 plt_images = list(zip(real_in_list, real_out_list, fake_out_list))
 
 plt.axis('off')
-fig = plt.figure(figsize=(image_show_col*2/5, image_show_col*2))
+fig = plt.figure(figsize=(image_show_row*2/5, image_show_row*2))
 
-for idx, image_zip in enumerate(plt_images[:image_show_col]):
+for idx, image_zip in enumerate(plt_images[:image_show_row]):
     real_in = os.path.join(real_in_dir, image_zip[0])
     real_out = os.path.join(real_out_dir, image_zip[1])
     fake_out = os.path.join(fake_out_dir, image_zip[2])
@@ -32,7 +32,7 @@ for idx, image_zip in enumerate(plt_images[:image_show_col]):
     f_fake_out = f_fake_out.resize((w, h), BICUBIC)
 
     for i in range(2, -1, -1):
-        ax = fig.add_subplot(image_show_col, 3, (idx+1)*3 - i)
+        ax = fig.add_subplot(image_show_row, 3, (idx+1)*3 - i)
         if i == 0:
             ax.imshow(f_fake_out)
         if i == 1:
