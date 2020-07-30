@@ -1,5 +1,7 @@
 from PIL import Image
+
 import colorsys
+import os
 
 
 def m_rgb_to_hsv(src):
@@ -47,11 +49,24 @@ def m_hsv_to_rgb(src):
 
 
 if __name__ == '__main__':
-    img_path = 'dataset/Lenna.png'
+    dataset_path = 'dataset/'
+    saved_path = 'hsv_rgb_conversion/'
 
-    img_origin = Image.open(img_path)
-    img_hsv = m_rgb_to_hsv(img_origin)
-    img_hsv.save('hsv_rgb_conversion/hsv.jpg')
+    file_list = os.listdir(dataset_path)
 
-    img_rgb = m_hsv_to_rgb(img_hsv)
-    img_rgb.save('hsv_rgb_conversion/rgb.jpg')
+    if not os.path.exists(saved_path):
+        os.mkdir(saved_path)
+
+    for idx, fn in enumerate(file_list):
+        img_path = dataset_path + fn
+
+        fn, _ = os.path.splitext(fn)
+
+        img_origin = Image.open(img_path)
+        img_hsv = m_rgb_to_hsv(img_origin)
+        img_hsv.save(saved_path + fn + '_hsv.jpg')
+
+        img_rgb = m_hsv_to_rgb(img_hsv)
+        img_rgb.save(saved_path + fn + '_rgb.jpg')
+
+        print(saved_path + fn + '\t  saved!')

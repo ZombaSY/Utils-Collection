@@ -6,9 +6,6 @@ from PIL.ImageOps import invert
 
 import numpy as np
 
-# Parameter
-DATASET_PATH = 'dataset/'
-
 
 def convert_handmade_src(src_path, output_size=None):
 
@@ -46,7 +43,12 @@ def convert_handmade_src(src_path, output_size=None):
     return pil_image
 
 
+# Parameter
+DATASET_PATH = 'dataset/'
+
+
 def main():
+
     file_list = os.listdir(DATASET_PATH)
 
     for idx, fn in enumerate(file_list):
