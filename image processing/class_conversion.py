@@ -96,7 +96,7 @@ def tensor_to_numpy(
 
 def rgb_to_lab(src):
     """
-    :param src: numpy array
+    :param src: numpy array, PIL
     :return: numpy array
     """
 
@@ -105,8 +105,15 @@ def rgb_to_lab(src):
 
 def lab_to_rgb(src):
     """
-    :param src: numpy array
+    :param src: numpy array, PIL
     :return: numpy array
     """
 
     return color.lab2rgb(src)
+
+
+if __name__ == '__main__':
+    img = Image.open('dataset/Lenna.png', 'r')
+    img = rgb_to_lab(img)
+    img_np_lab = np.array(img)
+    print(img_np_lab)
