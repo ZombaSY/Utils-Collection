@@ -94,7 +94,7 @@ def tensor_to_numpy(
     return ndarr
 
 
-def rgb_to_lab(src: np.ndarray):
+def rgb_to_lab(src):
     """
     :param src: numpy array
     :return: numpy array
@@ -103,7 +103,7 @@ def rgb_to_lab(src: np.ndarray):
     return color.rgb2lab(src)
 
 
-def lab_to_rgb(src: np.ndarray):
+def lab_to_rgb(src):
     """
     :param src: numpy array
     :return: numpy array
