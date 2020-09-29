@@ -1,8 +1,8 @@
 import os
 
-image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/tmp'
-transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/tmp/A'
-transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/tmp/B'
+image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/200928'
+transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/200928/A'
+transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/200928/B'
 image_list = os.listdir(image_dir)
 
 if not os.path.exists(transfer_destination_1):
@@ -23,11 +23,12 @@ for idx, image_name in enumerate(image_list):
         f_write_input = open(window_join(transfer_destination_1, image_name), 'wb')
         f_write_input.write(f_read.read())
         f_write_input.close()
-    elif image_path[-5] == '2':     # condition 2
+    elif image_path[-5] == 'b':     # condition 2
+
         image_name = list(image_name)
-        image_name[-5] = '1'
+        image_name[-5] = 'a'
         tmp = ''.join(image_name)
-        print(tmp)
+
         f_write_output = open(window_join(transfer_destination_2, tmp), 'wb')
         f_write_output.write(f_read.read())
         f_write_output.close()

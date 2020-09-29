@@ -1,6 +1,6 @@
 import os
 
-file_path = 'A:/Users/SSY/Desktop/dataset/cud_calibration/200925 dataset/train/A'
+file_path = 'A:/Users/SSY/Desktop/dataset/cud_calibration/200928 dataset/train/A'
 
 path_list = os.listdir(file_path)
 
