@@ -2,21 +2,23 @@ import torch.nn as nn
 
 
 def initialize_weights(m, activation):
-    classname = m.__class__.__name__
 
-    if activation not in ('relu', 'leaky_relu'):
-        raise Exception('Please specify your activation function name')
-    if classname.find('Conv') != -1:
-        nn.init.kaiming_uniform_(m.weight, nonlinearity=activation)
-    elif classname.find('BatchNorm2d') != -1:
-        nn.init.normal_(m.weight.data, 1.0, 0.02)
-        nn.init.constant_(m.bias.data, 0.0)
-    elif classname.find('Linear') != -1:
-        nn.init.kaiming_uniform_(m.weight, nonlinearity=activation)
-        if m.bias is not None:
-            m.bias.data.fill_(0.1)
-    else:
-        pass
+    for module in m.modules():
+        module_name = module.__class__.__name__
+
+        if activation not in ('relu', 'leaky_relu'):
+            raise Exception('Please specify your activation function name')
+        if module_name.find('Conv2') != -1:
+            nn.init.kaiming_uniform_(module.weight, nonlinearity=activation)
+        elif module_name.find('BatchNorm') != -1:
+            nn.init.normal_(module.weight.data, 1.0, 0.02)
+            nn.init.constant_(module.bias.data, 0.0)
+        elif module_name.find('Linear') != -1:
+            nn.init.kaiming_uniform_(module.weight, nonlinearity=activation)
+            if module.bias is not None:
+                module.bias.data.fill_(0.1)
+        else:
+            print('Cannot initialize the layer :', module_name)
 
 
 class Flatten(nn.Module):
