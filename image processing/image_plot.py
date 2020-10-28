@@ -21,7 +21,7 @@ PLT_ROW = 50
 PLT_COL = 3
 
 input_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201012 dataset/train/A'
-output_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201012 dataset/train/A'
+output_dir = 'A:/Users/SSY/Desktop/temp'
 target_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201012 dataset/train/B'
 
 input_list = os.listdir(input_dir)
@@ -42,7 +42,7 @@ if image_show_row > PLT_ROW:
 for render_idx in range(render_iteration):
     last_index = render_idx * PLT_ROW
 
-    figure_width = 1280 / figure_dpi
+    figure_width = 1280 / figure_dpi / 2
     figure_height = 1080 / figure_dpi
 
     if not (render_idx + 1 == render_iteration):

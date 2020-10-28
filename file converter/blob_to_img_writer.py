@@ -2,7 +2,7 @@ import base64
 import cv2
 import numpy as np
 
-input_name = 'hair_loss_daily-ThickImg.bin'
+input_name = 'hair-img.bin'
 output_name = 'bald.jpg'
 
 with open(input_name, 'rb') as f:

@@ -3,7 +3,7 @@ from PIL import Image
 import math
 import os
 
-DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201012 dataset/train/A/'
+DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201028 dataset/train/B/'
 MAXIMUM_RESOLUTION = 1280*720
 
 
@@ -29,15 +29,15 @@ def img_resize(img, maximum_resolution):
 def main():
     file_list = os.listdir(DATASET_PATH)
 
-    if not os.path.exists('./image_resize'):
-        os.mkdir('.image_resize')
+    if not os.path.exists('image_resize'):
+        os.mkdir('image_resize')
 
     for idx, fn in enumerate(file_list):
         img_path = DATASET_PATH + fn
         img = Image.open(img_path)
         img, dpi = img_resize(img, maximum_resolution=MAXIMUM_RESOLUTION)
 
-        img.save('./image_resize/' + fn, quality=100, dpi=dpi)
+        img.save('image_resize/' + fn, quality=100, dpi=dpi)
         print(fn + ' Done!')
 
 

@@ -1,8 +1,8 @@
 import os
 
-image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_81-131)_201008 전달'
-transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_81-131)_201008 전달/A'
-transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_81-131)_201008 전달/B'
+image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_251-300)_201023 전달'
+transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_251-300)_201023 전달/A'
+transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터(T3_251-300)_201023 전달/B'
 image_list = os.listdir(image_dir)
 
 if not os.path.exists(transfer_destination_1):
@@ -26,7 +26,7 @@ for idx, image_name in enumerate(image_list):
     elif image_path[-5] == 'b':     # condition 2
 
         image_name = list(image_name)
-        image_name[-5] = 'a'
+        image_name[-5] = 'a'    # both image has to be same name
         tmp = ''.join(image_name)
 
         f_write_output = open(window_join(transfer_destination_2, tmp), 'wb')
