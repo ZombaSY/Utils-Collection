@@ -4,8 +4,6 @@ import PIL.Image as pil
 import os
 import math
 
-from PIL.Image import BILINEAR, BICUBIC
-
 plt.axis('off')
 figure_dpi = 300
 
@@ -20,7 +18,6 @@ directories = [
     'A:/Users/SSY/Desktop/dataset/cud_calibration/201113 dataset/train/B',
 ]
 
-# PLT_COL = 3
 PLT_COL = len(directories)
 
 directory_list = list()
@@ -29,7 +26,7 @@ for item in directories:
     directory_list.append(file_names)
 
 image_show_row = len(directory_list[0])
-# image_show_row = 10   # fix the plot length
+# image_show_row = 10   # fix the the number of image
 
 directory_list = np.array(directory_list).transpose().tolist()
 
@@ -40,10 +37,10 @@ if image_show_row > PLT_ROW:
 for render_idx in range(render_iteration):
     last_index = render_idx * PLT_ROW
 
-    figure_width = 1920 / figure_dpi / 3
+    figure_width = 1    # width will be automatically resized by subplot
     figure_height = 1920 / figure_dpi
 
-    if not (render_idx + 1 == render_iteration):
+    if not render_idx + 1 == render_iteration:
         plt_render_images = directory_list[last_index:PLT_ROW * (render_idx + 1)]
 
         fig = plt.figure(figsize=(figure_width * PLT_COL, figure_height * PLT_ROW))
@@ -52,6 +49,8 @@ for render_idx in range(render_iteration):
         plt_render_images = directory_list[last_index:image_show_row]
 
         _, lefts = divmod(image_show_row, PLT_ROW)
+        if lefts == 0:
+            lefts = PLT_ROW
         fig = plt.figure(figsize=(figure_width * PLT_COL, figure_height * lefts))
         fig.dpi = figure_dpi
 
