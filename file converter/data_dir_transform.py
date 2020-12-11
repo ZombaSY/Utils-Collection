@@ -1,8 +1,8 @@
 import os
 
-image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201124_재가공(T4_01-134)_201126 전달'
-transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201124_재가공(T4_01-134)_201126 전달/A'
-transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201124_재가공(T4_01-134)_201126 전달/B'
+image_dir = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201203_재가공(T5_131개)_201204 전달'
+transfer_destination_1 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201203_재가공(T5_131개)_201204 전달/A'
+transfer_destination_2 = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/201203_재가공(T5_131개)_201204 전달/B'
 image_list = os.listdir(image_dir)
 
 if not os.path.exists(transfer_destination_1):

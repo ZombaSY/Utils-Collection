@@ -3,7 +3,7 @@ from PIL import Image
 import math
 import os
 
-DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201127 dataset/train/B/'
+DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/B/'
 MAXIMUM_RESOLUTION = 1280*720
 
 
