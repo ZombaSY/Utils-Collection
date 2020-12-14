@@ -11,10 +11,11 @@ figure_dpi = 300
 PLT_ROW = 30
 
 directories = [
-    'A:/Users/SSY/Desktop/dataset/cud_calibration/201113 dataset/train/A',  # input
-    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/2020-11-29 150746/201113 - 9000',
-    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/2020-11-29 150746/201113 - 20000',
-    'A:/Users/SSY/Desktop/dataset/cud_calibration/201113 dataset/train/B',  # target
+    'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/A',  # input
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162844/outputs',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162924/outputs',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162949/outputs',
+    'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/B',  # target
 ]
 
 PLT_COL = len(directories)

@@ -6,37 +6,37 @@ from matplotlib import pyplot as plt
 from skimage import color
 
 
-input_dir = 'dataset/T3-240_a.jpg'
-output_dir = 'dataset/T3-240_out.jpg'
-target_dir = 'dataset/T3-240_b.jpg'
+input_dir = 'dataset/T4-41_a.jpg'
+output_dir = 'dataset/T4-41_out.jpg'
+target_dir = 'dataset/T4-41_b.jpg'
 
 
-def show_histogram(_input, _output, _target, title, save_image=False, bins=100):
+def show_histogram(_input, _output, _target, channel, save_image=False, bins=100):
     """
     :param _input: Numpy Array
     :param _output: Numpy Array
     :param _target: Numpy Array
-    :param title: This variable decides the loop iterations. Choice of ['RGB', 'HSV', 'Lab'].
+    :param channel: This variable decides the loop iterations. Choice of ['RGB', 'HSV', 'Lab'].
     :param save_image: Boolean
     :param bins: The number of 'x axis' in plot
     """
 
-    for i in range(len(title)):
+    for i in range(len(channel)):
 
         x_hist_dim = np.histogram(_input[:, :, i], bins=bins)
         output_hist_dim = np.histogram(_output[:, :, i], bins=bins)
         target_hist_dim = np.histogram(_target[:, :, i], bins=bins)
 
-        plt.plot(x_hist_dim[0], label=title[i] + '_input')
-        plt.plot(output_hist_dim[0], label=title[i] + '_output')
-        plt.plot(target_hist_dim[0], label=title[i] + '_target')
+        plt.plot(x_hist_dim[0], label=channel[i] + '_input')
+        plt.plot(output_hist_dim[0], label=channel[i] + '_output')
+        plt.plot(target_hist_dim[0], label=channel[i] + '_target')
 
         plt.legend()
         if save_image:
             if not os.path.exists('show_histogram'):
                 os.mkdir('show_histogram')
-            plt.savefig('show_histogram/' + title + '_' + title[i])
-        plt.show()
+            plt.savefig('show_histogram/' + channel + '_' + channel[i])
+        # plt.show()
         plt.clf()
 
 
@@ -54,9 +54,9 @@ def main():
     output_lab = color.rgb2lab(output_rgb)
     target_lab = color.rgb2lab(target_rgb)
 
-    show_histogram(x_rgb, output_rgb, target_rgb, title='RGB', save_image=True)
-    show_histogram(x_hsv, output_hsv, target_hsv, title='HSV', save_image=True)
-    show_histogram(x_lab, output_lab, target_lab, title='Lab', save_image=True)
+    show_histogram(x_rgb, output_rgb, target_rgb, channel='RGB', save_image=True)
+    show_histogram(x_hsv, output_hsv, target_hsv, channel='HSV', save_image=True)
+    show_histogram(x_lab, output_lab, target_lab, channel='Lab', save_image=True)
 
 
 if __name__ == '__main__':
