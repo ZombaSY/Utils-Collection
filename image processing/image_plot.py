@@ -14,7 +14,8 @@ directories = [
     'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/A',  # input
     'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162844/outputs',
     'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162924/outputs',
-    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162949/outputs',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-11 163819/outputs',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-14 134223/outputs',
     'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/B',  # target
 ]
 
