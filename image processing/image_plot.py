@@ -16,15 +16,25 @@ directories = [
     'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-08-162924/outputs',
     'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-11 163819/outputs',
     'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-14 134223/outputs',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-21 152137/outputs_201207',
+    'A:/Users/SSY/Desktop/ProjectFiles/Danbi/experiments/CURL/2020-12-21 152336/outputs_201207',
     'A:/Users/SSY/Desktop/dataset/cud_calibration/201207 dataset/train/B',  # target
 ]
 
 PLT_COL = len(directories)
 
 directory_list = list()
-for item in directories:
+dir_len = 0
+dir_len_past = 0
+for i, item in enumerate(directories):
     file_names = os.listdir(item)
+    dir_len = len(file_names)
+
+    if i != 0:
+        assert dir_len == dir_len_past, 'File length should be same: {:s}'.format(item)
+
     directory_list.append(file_names)
+    dir_len_past = dir_len
 
 image_show_row = len(directory_list[0])
 # image_show_row = 10   # fix the the number of image

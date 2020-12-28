@@ -3,7 +3,7 @@ from PIL import Image
 import math
 import os
 
-DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터_T5-4_60개_201218 전달'
+DATASET_PATH = 'A:/Users/SSY/Desktop/dataset/cud_calibration/RAW/학습데이터_T5-7_50개_201224전달'
 output_path = 'image_resize/'
 MAXIMUM_RESOLUTION = 1280*720
 

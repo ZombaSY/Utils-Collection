@@ -99,8 +99,6 @@ def get_histogram(_input, _output, _target, channel='abc', bins=100):
         # plt.show()
         plt.clf()
 
-    print(input_hist)
-
     # return output_hist_dim_tensor, target_hist_dim_tensor
 
 
